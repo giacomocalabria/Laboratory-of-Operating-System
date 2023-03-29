@@ -30,9 +30,30 @@ func noleggia(c Cliente){
 
 //Creare  una  function  "stampa"  che,  alla  fine  del  processo,  stampa  il  numero  di Berline, SUV e Station Wagon noleggiati.
 func stampa(){
-	fmt.Printf("Ciao")
+	fmt.Printf("Veicoli tipo Berlina noleggiati: %d\n", )
+	fmt.Printf("Veicoli tipo SUV noleggiati: %d\n", )
+	fmt.Printf("Veicoli tipo Station Wagon noleggiati: %d\n", )
 }
 
 func main(){
+	clienti := []Cliente{
+		{"A"},
+		{"B"},
+		{"C"},
+		{"D"},
+		{"E"},
+		{"F"},
+		{"G"},
+		{"H"},
+		{"I"},
+		{"L"},
+	}
+
+	veicoli := []Veicolo{
+		{"Berlina"},
+		{"SUV"},
+		{"Station Wagon"},
+	}
+	
 	stampa()
 }
