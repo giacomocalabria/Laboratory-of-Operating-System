@@ -1,3 +1,22 @@
+/*
+    Scrivere un programma in Go che simuli un'attività di trading di valute in un mercato fittizio.
+
+    Il programma deve simulare usando la concorrenza tre coppie di valute: EUR/USD, GBP/USD e JPY/USD, e simulare le operazioni di acquisto e vendita in parallelo.
+
+    Creare una funzione "simulateMarketData" che simuli il prezzo delle coppie di valute e invii i dati simulati su un canale. I prezzi vengono generati e inviati sul canale corrispondente ogni secondo. In particolare:
+    • Il prezzo della coppia EUR/USD varia casualmente tra 1.0 e 1.5.
+    • Il prezzo della coppia GBP/USD varia casualmente tra 1.0 e 1.5.
+    • Il prezzo della coppia JPY/USD varia casualmente tra 0.006 e 0.009.
+
+    Creare una funzione "selectPair" che usa una "select" per gestire le operazioni di vendita e acquisto in base alle condizioni specificate. In particolare:
+    • Se il prezzo di EUR/USD supera 1.20, deve vendere EUR/USD. Simulare la vendita con un tempo di 4 secondi, cioè inserire un delay di 4 secondi prima di confermare la vendita.
+    • Se il prezzo di GBP/USD scende sotto 1.35, deve acquistare GBP/USD. Simulare l'acquisto con un tempo di 3 secondi, cioè inserire un delay di 3 secondi prima di confermare l'acquisto.
+    • Se il prezzo di JPY/USD scende sotto 0.0085, deve acquistare JPY/USD. Simulare l'acquisto con un tempo di 3 secondi, cioè inserire un delay di 3 secondi prima di confermare l'acquisto.
+
+    Il programma deve eseguire il ciclo di trading per un minuto e alla fine del ciclo deve terminare
+
+*/
+
 package main
 
 import (
