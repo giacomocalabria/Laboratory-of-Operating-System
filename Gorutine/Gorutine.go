@@ -13,6 +13,6 @@ func main() {
 func writeTwoTimes(s string){
     for i:=0; i<2; i++{
         time.Sleep(100*time.Millisecond)
-        fmt.Print(s)
+        fmt.Println(s)
     }
 }

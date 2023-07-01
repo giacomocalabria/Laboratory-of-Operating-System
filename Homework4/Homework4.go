@@ -23,6 +23,7 @@ import (
     "fmt"
     "math/rand"
     "time"
+    "sync"
 )
 
 type CurrencyPair string
@@ -33,61 +34,71 @@ const (
     JPYUSD CurrencyPair = "JPY/USD"
 )
 
-type TradeAction string
-
-const (
-    Buy  TradeAction = "buy"
-    Sell TradeAction = "sell"
-)
-
-type Trade struct {
-    Pair   CurrencyPair
-    Action TradeAction
-}
-
-func simulateMarketData(ch chan<- map[CurrencyPair]float64) {
+func simulateMarketData(market chan map[CurrencyPair]float64) {
     for {
-        data := make(map[CurrencyPair]float64)
+        data := <- market
         data[EURUSD] = rand.Float64()*0.5 + 1.0
         data[GBPUSD] = rand.Float64()*0.5 + 1.0
         data[JPYUSD] = rand.Float64()*0.003 + 0.006
-        ch <- data
+        market <- data
+        fmt.Printf("Aggiorna borsa --> EUR/USD: %.3f GBP/USD: %.3f JPY/USD: %.3f\n", data[EURUSD], data[GBPUSD], data[JPYUSD])
         time.Sleep(time.Second)
     }
 }
 
-func selectPair(ch <-chan map[CurrencyPair]float64, trades chan<- Trade) {
-    for {
-        select {
-        case data := <-ch:
-            if data[EURUSD] > 1.20 {
-                trades <- Trade{Pair: EURUSD, Action: Sell}
-                time.Sleep(4 * time.Second)
-                fmt.Printf("Sold %s at %.4f\n", EURUSD, data[EURUSD])
-            } else if data[GBPUSD] < 1.35 {
-                trades <- Trade{Pair: GBPUSD, Action: Buy}
-                time.Sleep(3 * time.Second)
-                fmt.Printf("Bought %s at %.4f\n", GBPUSD, data[GBPUSD])
-            } else if data[JPYUSD] < 0.0085 {
-                trades <- Trade{Pair: JPYUSD, Action: Buy}
-                time.Sleep(3 * time.Second)
-                fmt.Printf("Bought %s at %.4f\n", JPYUSD, data[JPYUSD])
-            }
-        case <-time.After(time.Minute):
-            fmt.Println("Trading cycle completed")
-            return
+func selectPair(marketData chan map[CurrencyPair]float64, wg *sync.Mutex){
+    select{
+    case data := <-marketData:
+        marketData <- data
+        wg.Lock()
+        if data[EURUSD] > 1.20 {
+            fmt.Printf("Sto vendendo %s a %.3f ...\n", EURUSD, data[EURUSD])
+            time.Sleep(4 * time.Second)
+            fmt.Printf("Transazione %s confermata\n", EURUSD)
         }
+        wg.Unlock()
+    case data := <-marketData:
+        marketData <- data
+        wg.Lock()
+        if data[GBPUSD] < 1.35 {
+            fmt.Printf("Sto comprando %s a %.3f ...\n", GBPUSD, data[GBPUSD])
+            time.Sleep(3 * time.Second)
+            fmt.Printf("Transazione %s confermata\n", GBPUSD)
+        }
+        wg.Unlock()
+    case data := <-marketData:
+        marketData <- data
+        wg.Lock()
+        if data[JPYUSD] < 0.0085 {
+            fmt.Printf("Sto comprando %s a %.3f ...\n", JPYUSD, data[JPYUSD])
+            time.Sleep(3 * time.Second)
+            fmt.Printf("Transazione %s confermata\n", JPYUSD)
+        }
+        wg.Unlock()
     }
 }
 
-func main() {
-    rand.Seed(time.Now().UnixNano())
+func main(){
+    rand.Seed(time.Now().UnixNano()) // Inizializzo il generatore di numeri casuali
 
-    marketData := make(chan map[CurrencyPair]float64)
-    trades := make(chan Trade)
+    /* **** STRUMENTI PER LA SINCRONIZZAZIONE ****
+     * Viene utilizzato un unico canale contenente le varie valute di scambio
+     * Viene usato un semplice mutex per la sincronizzazione delle transazioni
+    */
+    var wg sync.Mutex
 
+    marketData := make(chan map[CurrencyPair]float64, 1)
+    marketData <- map[CurrencyPair] float64{} 
+    
+    // **** INIZIO DEL CICLO DI TRADING ****
+    fmt.Println("Starting trading cycle")
     go simulateMarketData(marketData)
-    go selectPair(marketData, trades)
+    
+    time.Sleep(time.Second)
+    start := time.Now()
+    for time.Since(start) < time.Minute{
+        go selectPair(marketData, &wg)
+    }
 
-    <-time.After(time.Minute)
+    fmt.Println("Trading cycle ended")
 }
