@@ -20,20 +20,25 @@
 package main
 
 import (
-    "fmt"
-    "math/rand"
-    "time"
-    "sync"
+    "fmt"   // Standard package per la stampa su console 	
+    "math/rand" // Package rand per la generazione di numeri casuali
+    "time"  // Package time per la gestione degli intervalli di tempo
+    "sync"  // Package sync per la sincronizzazione con i mutex
 )
 
+// Definisco delle stringhe per identificare le varie coppie di valute
 type CurrencyPair string
-
 const (
     EURUSD CurrencyPair = "EUR/USD"
     GBPUSD CurrencyPair = "GBP/USD"
     JPYUSD CurrencyPair = "JPY/USD"
 )
 
+/* **** FUNZIONE PER GENERARE I DATI DI MERCATO ****
+ * Ogni secondo viene generato un nuovo valore per ogni valuta
+ * I valori sono compresi tra un minimo e un massimo specificati per ogni valuta
+ * I valori vengono aggiornati sul canale market
+*/
 func simulateMarketData(market chan map[CurrencyPair]float64) {
     for {
         data := <- market
@@ -46,6 +51,10 @@ func simulateMarketData(market chan map[CurrencyPair]float64) {
     }
 }
 
+/* **** FUNZIONE PER SELEZIONARE LE COPPIE DI VALUTE ****
+
+
+*/
 func selectPair(marketData chan map[CurrencyPair]float64, wg *sync.Mutex){
     select{
     case data := <-marketData:
@@ -92,9 +101,9 @@ func main(){
     
     // **** INIZIO DEL CICLO DI TRADING ****
     fmt.Println("Starting trading cycle")
-    go simulateMarketData(marketData)
+    go simulateMarketData(marketData) // Avvio la simulazione del mercato ogni secondo
     
-    time.Sleep(time.Second)
+    time.Sleep(time.Second) // Attendo un secondo per far partire la simulazione in modo da avere i primi dati disponibili del mercato
     start := time.Now()
     for time.Since(start) < time.Minute{
         go selectPair(marketData, &wg)
