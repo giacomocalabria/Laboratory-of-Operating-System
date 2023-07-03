@@ -55,7 +55,7 @@ func main(){
 
 	// **** STAMPA DEL RISULTATO ****
 	total := <- conta // Prendo dal channel "conta" il conteggio finale del carattere
-	fmt.Printf("Il carattere '%c' compare %d volte nella stringa %s\n", carattere, total, stringa) // Stampo il risultato
+	fmt.Printf("Il carattere '%c' compare %d volte nella stringa \"%s\"\n", carattere, total, stringa) // Stampo il risultato
 }
 
 
